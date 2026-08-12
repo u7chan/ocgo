@@ -72,8 +72,12 @@ export function createMainCommand(): Command {
         })
       } catch (error) {
         if (error instanceof ProfileError) {
-          console.error(error.message)
-          program.outputHelp()
+          if (json) {
+            outputJsonFailure('run.plan', 'PROFILE_ERROR', error.message)
+          } else {
+            console.error(error.message)
+            program.outputHelp()
+          }
           process.exit(1)
         }
         throw error

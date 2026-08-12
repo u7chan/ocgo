@@ -124,6 +124,62 @@ multiplexer:
     }
   })
 
+  it('outputs only a run.plan JSON failure for an unknown profile in JSON mode', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'cagent-run-profile-json-error-test-'))
+    const file = join(dir, 'config.yaml')
+    writeFileSync(
+      file,
+      `default_agent: codex
+default_profile: mid
+profiles:
+  mid: { agent: codex, model: test-model-v1 }
+agents:
+  codex:
+    bin: node
+    provider: codex
+    model_id_prefix: false
+multiplexer:
+  default: herdr
+  herdr: { enabled: true }
+`,
+    )
+    const originalConfig = process.env.CAGENT_CONFIG
+    process.env.CAGENT_CONFIG = file
+    const logSpy = spyOn(console, 'log').mockImplementation(() => {})
+    const errorSpy = spyOn(console, 'error').mockImplementation(() => {})
+    const exitSpy = spyOn(process, 'exit').mockImplementation(() => {
+      throw new Error('process.exit')
+    })
+    let help = ''
+    try {
+      const program = createMainCommand()
+      program.addCommand(createRunCommand())
+      program.addCommand(createListCommand())
+      program.configureOutput({ writeOut: (message) => (help += message) })
+      await expect(
+        program.parseAsync(['node', 'cagent', 'run', 'missing', '--dry-run', '--json']),
+      ).rejects.toThrow('process.exit')
+
+      expect(logSpy).toHaveBeenCalledTimes(1)
+      const output = JSON.parse(String(logSpy.mock.calls[0]?.[0]))
+      expect(output.schema_version).toBe(1)
+      expect(output.ok).toBe(false)
+      expect(output.operation).toBe('run.plan')
+      expect(output.error.code).toBe('PROFILE_ERROR')
+      expect(output.error.message).toBe('unknown profile: missing')
+      expect(errorSpy).not.toHaveBeenCalled()
+      expect(help).toBe('')
+      expect(exitSpy).toHaveBeenCalledWith(1)
+    } finally {
+      exitSpy.mockRestore()
+      errorSpy.mockRestore()
+      logSpy.mockRestore()
+      if (originalConfig === undefined) delete process.env.CAGENT_CONFIG
+      else process.env.CAGENT_CONFIG = originalConfig
+      rmSync(dir, { recursive: true, force: true })
+    }
+  })
+
   it('outputs a non-interactive dry-run plan as JSON', async () => {
     const dir = mkdtempSync(join(tmpdir(), 'cagent-run-json-test-'))
     const file = join(dir, 'config.yaml')
