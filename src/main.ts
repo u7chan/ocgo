@@ -33,6 +33,10 @@ export function createMainCommand(): Command {
     )
     .allowUnknownOption()
     .action(async (positionalProfile: string | undefined, options: MainOptions) => {
+      if (positionalProfile === 'profiles') {
+        program.error("error: unknown command 'profiles'")
+      }
+
       if (positionalProfile?.startsWith('--')) {
         program.error(`error: unknown option '${positionalProfile}'`)
       }
@@ -68,7 +72,12 @@ export function createMainCommand(): Command {
         })
       } catch (error) {
         if (error instanceof ProfileError) {
-          console.error(error.message)
+          if (json) {
+            outputJsonFailure('run.plan', 'PROFILE_ERROR', error.message)
+          } else {
+            console.error(error.message)
+            program.outputHelp()
+          }
           process.exit(1)
         }
         throw error

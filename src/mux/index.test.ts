@@ -345,6 +345,89 @@ describe('mux JSON output', () => {
   })
 })
 
+describe('mux unknown profile guidance', () => {
+  for (const mode of ['start', 'run'] as const) {
+    it(`guides human users to cagent list for mux ${mode}`, async () => {
+      clearEffortEnv()
+      const { file, cleanup } = writeTempConfig(codexConfig)
+      const originalConfig = process.env.CAGENT_CONFIG
+      process.env.CAGENT_CONFIG = file
+      const errorSpy = spyOn(console, 'error').mockImplementation(() => {})
+      const logSpy = spyOn(console, 'log').mockImplementation(() => {})
+      const exitSpy = spyOn(process, 'exit').mockImplementation(() => {
+        throw new Error('process.exit')
+      })
+      try {
+        const program = createMainCommand()
+        program.addCommand(createMuxCommand())
+        await expect(
+          program.parseAsync(['node', 'cagent', 'mux', mode, 'missing-profile']),
+        ).rejects.toThrow('process.exit')
+
+        expect(errorSpy).toHaveBeenNthCalledWith(1, 'unknown profile: missing-profile')
+        expect(errorSpy).toHaveBeenNthCalledWith(
+          2,
+          'Run `cagent list` to view configured profiles.',
+        )
+        expect(logSpy).not.toHaveBeenCalled()
+        expect(exitSpy).toHaveBeenCalledWith(1)
+      } finally {
+        exitSpy.mockRestore()
+        logSpy.mockRestore()
+        errorSpy.mockRestore()
+        if (originalConfig === undefined) delete process.env.CAGENT_CONFIG
+        else process.env.CAGENT_CONFIG = originalConfig
+        cleanup()
+      }
+    })
+
+    it(`keeps mux ${mode} JSON failures structured for an unknown profile`, async () => {
+      clearEffortEnv()
+      const { file, cleanup } = writeTempConfig(codexConfig)
+      const originalConfig = process.env.CAGENT_CONFIG
+      process.env.CAGENT_CONFIG = file
+      const logSpy = spyOn(console, 'log').mockImplementation(() => {})
+      const errorSpy = spyOn(console, 'error').mockImplementation(() => {})
+      const exitSpy = spyOn(process, 'exit').mockImplementation(() => {
+        throw new Error('process.exit')
+      })
+      try {
+        const program = createMainCommand()
+        program.addCommand(createMuxCommand())
+        await expect(
+          program.parseAsync([
+            'node',
+            'cagent',
+            'mux',
+            mode,
+            'missing-profile',
+            '--dry-run',
+            '--json',
+          ]),
+        ).rejects.toThrow('process.exit')
+
+        expect(logSpy).toHaveBeenCalledTimes(1)
+        const output = JSON.parse(String(logSpy.mock.calls[0]?.[0]))
+        expect(output.schema_version).toBe(1)
+        expect(output.ok).toBe(false)
+        expect(output.operation).toBe(`mux.${mode}.plan`)
+        expect(output.error.code).toBe('PROFILE_ERROR')
+        expect(output.error.message).toBe('unknown profile: missing-profile')
+        expect(output.error.suggestion).toBe('Run `cagent list` to view configured profiles.')
+        expect(errorSpy).not.toHaveBeenCalled()
+        expect(exitSpy).toHaveBeenCalledWith(1)
+      } finally {
+        exitSpy.mockRestore()
+        errorSpy.mockRestore()
+        logSpy.mockRestore()
+        if (originalConfig === undefined) delete process.env.CAGENT_CONFIG
+        else process.env.CAGENT_CONFIG = originalConfig
+        cleanup()
+      }
+    })
+  }
+})
+
 describe('mux dry-run resolution output', () => {
   it('prints resolved profile lines with overrides before the herdr plan', async () => {
     clearEffortEnv()

@@ -3,6 +3,7 @@ import { chmodSync, existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { CommanderError } from 'commander'
+import { createListCommand } from './list.js'
 import { createMainCommand } from './main.js'
 import { createRunCommand } from './run.js'
 import { VERSION } from './version.js'
@@ -56,6 +57,92 @@ multiplexer:
 }
 
 describe('createMainCommand', () => {
+  it('prints the profile error and root CLI help for an unknown profile', async () => {
+    const tmpDir = mkdtempSync(join(tmpdir(), 'cagent-main-profile-error-test-'))
+    const config = join(tmpDir, 'config.yaml')
+    writeTestConfig(config, 'node')
+
+    const originalConfig = process.env.CAGENT_CONFIG
+    process.env.CAGENT_CONFIG = config
+    const errorSpy = spyOn(console, 'error').mockImplementation(() => {})
+    const exitSpy = spyOn(process, 'exit').mockImplementation(() => {
+      throw new Error('process.exit')
+    })
+    let help = ''
+    try {
+      const program = createMainCommand()
+      program.addCommand(createRunCommand())
+      program.addCommand(createListCommand())
+      program.configureOutput({ writeOut: (message) => (help += message) })
+      await expect(program.parseAsync(['node', 'cagent', 'missing'])).rejects.toThrow(
+        'process.exit',
+      )
+
+      expect(errorSpy).toHaveBeenCalledWith('unknown profile: missing')
+      expect(help).toContain('Usage: cagent [options] [command] [profile]')
+      expect(help).toContain('Options:')
+      expect(help).toContain('Commands:')
+      expect(help).toContain('list')
+      expect(help).not.toContain('Available profiles:')
+    } finally {
+      exitSpy.mockRestore()
+      errorSpy.mockRestore()
+      if (originalConfig === undefined) delete process.env.CAGENT_CONFIG
+      else process.env.CAGENT_CONFIG = originalConfig
+      rmSync(tmpDir, { recursive: true, force: true })
+    }
+  })
+
+  it('outputs only a run.plan JSON failure for an unknown profile in JSON mode', async () => {
+    const tmpDir = mkdtempSync(join(tmpdir(), 'cagent-main-profile-json-error-test-'))
+    const config = join(tmpDir, 'config.yaml')
+    writeTestConfig(config, 'node')
+
+    const originalConfig = process.env.CAGENT_CONFIG
+    process.env.CAGENT_CONFIG = config
+    const logSpy = spyOn(console, 'log').mockImplementation(() => {})
+    const errorSpy = spyOn(console, 'error').mockImplementation(() => {})
+    const exitSpy = spyOn(process, 'exit').mockImplementation(() => {
+      throw new Error('process.exit')
+    })
+    let help = ''
+    try {
+      const program = createMainCommand()
+      program.addCommand(createRunCommand())
+      program.addCommand(createListCommand())
+      program.configureOutput({ writeOut: (message) => (help += message) })
+      await expect(
+        program.parseAsync(['node', 'cagent', 'missing', '--dry-run', '--json']),
+      ).rejects.toThrow('process.exit')
+
+      expect(logSpy).toHaveBeenCalledTimes(1)
+      const output = JSON.parse(String(logSpy.mock.calls[0]?.[0]))
+      expect(output.schema_version).toBe(1)
+      expect(output.ok).toBe(false)
+      expect(output.operation).toBe('run.plan')
+      expect(output.error.code).toBe('PROFILE_ERROR')
+      expect(output.error.message).toBe('unknown profile: missing')
+      expect(errorSpy).not.toHaveBeenCalled()
+      expect(help).toBe('')
+      expect(exitSpy).toHaveBeenCalledWith(1)
+    } finally {
+      exitSpy.mockRestore()
+      errorSpy.mockRestore()
+      logSpy.mockRestore()
+      if (originalConfig === undefined) delete process.env.CAGENT_CONFIG
+      else process.env.CAGENT_CONFIG = originalConfig
+      rmSync(tmpDir, { recursive: true, force: true })
+    }
+  })
+
+  it('rejects the removed profiles command as unknown', async () => {
+    const program = createMainCommand()
+    program.exitOverride()
+    await expect(program.parseAsync(['node', 'cagent', 'profiles'])).rejects.toThrow(
+      "unknown command 'profiles'",
+    )
+  })
+
   it('fails a bare cagent without a TTY before launching a child process', async () => {
     const tmpDir = mkdtempSync(join(tmpdir(), 'cagent-main-test-'))
     const config = join(tmpDir, 'config.yaml')

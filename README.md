@@ -206,11 +206,11 @@ cagent doctor --json
 
 ### プロファイルとモデルの一覧
 
-`cagent profiles` は設定済みのプロファイルと、その`agent` / `model` / `effort`を表示します。
+`cagent list` は設定済みのプロファイルと、その`agent` / `model` / `effort`を表示します。
 外部CLIは起動しません。`*` は `default_profile` を示します。
 
 ```bash
-cagent profiles
+cagent list
 ```
 
 ```text
@@ -223,12 +223,12 @@ frontier     codex       gpt-5.6-sol    high
 ```
 
 `cagent models` は設定済みモデルの一覧を表示しません。プロファイルの一覧には
-`cagent profiles`、プロバイダーで利用できるモデルの一覧には `cagent models available` を使います。
+`cagent list`、プロバイダーで利用できるモデルの一覧には `cagent models available` を使います。
 `cagent models` 単体はこの案内を表示して終了します。
 
 `models available` はプロバイダーCLIに問い合わせ、現在利用可能なモデルを表示します。
 OpenCode Goでは次のコマンドに対応しています。Codexにはプロバイダーのモデル検出アダプターが
-ないため、Codexで利用できるモデルは `cagent profiles` と設定を確認してください。
+ないため、Codexで利用できるモデルは `cagent list` と設定を確認してください。
 
 ```bash
 CAGENT_AGENT=opencode-go cagent models available

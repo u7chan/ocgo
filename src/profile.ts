@@ -26,19 +26,13 @@ function cliValue(value: string | undefined, flag: string): string | undefined {
   return value
 }
 
-function availableText(config: Config): string {
-  const names = Object.keys(config.profiles ?? {})
-  const listed = names.length > 0 ? names.map((name) => `  ${name}`).join('\n') : '  (none defined)'
-  return `Available profiles:\n${listed}`
-}
-
 export function resolveProfile(config: Config, options: ResolveProfileOptions): ResolvedProfile {
   const cliProfile = cliValue(options.cliProfile, '--profile')
   const envProfile = nonEmpty(options.envProfile)
   const profileName = cliProfile ?? envProfile ?? config.default_profile
 
   if (profileName === undefined) {
-    throw new ProfileError(`no launch profile selected\n\n${availableText(config)}`)
+    throw new ProfileError('no launch profile selected')
   }
 
   const profiles = config.profiles
@@ -47,7 +41,7 @@ export function resolveProfile(config: Config, options: ResolveProfileOptions): 
       ? profiles[profileName]
       : undefined
   if (!profile) {
-    throw new ProfileError(`unknown profile: ${profileName}\n\n${availableText(config)}`)
+    throw new ProfileError(`unknown profile: ${profileName}`)
   }
 
   const cliModel = cliValue(options.cliModel, '--model')

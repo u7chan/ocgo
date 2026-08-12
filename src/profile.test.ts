@@ -67,15 +67,11 @@ describe('resolveProfile', () => {
     expect(result.agent).toBe('codex')
   })
 
-  it('throws for an unknown profile with the available list', () => {
+  it('throws for an unknown profile without an available list', () => {
     expect(() => resolveProfile(makeConfig(), { cliProfile: 'nope' })).toThrow(ProfileError)
     expect(() => resolveProfile(makeConfig(), { cliProfile: 'nope' })).toThrow(
-      'unknown profile: nope',
+      /^unknown profile: nope$/,
     )
-    expect(() => resolveProfile(makeConfig(), { cliProfile: 'nope' })).toThrow(
-      'Available profiles:',
-    )
-    expect(() => resolveProfile(makeConfig(), { cliProfile: 'nope' })).toThrow('  balanced')
   })
 
   it('throws when no profile is selected and no default is configured', () => {
@@ -83,14 +79,13 @@ describe('resolveProfile', () => {
     config.default_profile = undefined
     expect(() => resolveProfile(config, {})).toThrow(ProfileError)
     expect(() => resolveProfile(config, {})).toThrow('no launch profile selected')
-    expect(() => resolveProfile(config, {})).toThrow('Available profiles:')
   })
 
-  it('reports an empty available list when no profiles are defined', () => {
+  it('reports a missing profile when no profiles are defined', () => {
     const config = makeConfig()
     config.profiles = undefined
     config.default_profile = undefined
-    expect(() => resolveProfile(config, {})).toThrow('(none defined)')
+    expect(() => resolveProfile(config, {})).toThrow('no launch profile selected')
   })
 
   it('prioritizes CLI model over env model and profile model', () => {

@@ -2,10 +2,10 @@
 import { createConfigCommand } from './config-cmd.js'
 import { createDoctorCommand } from './doctor.js'
 import { outputJsonFailure } from './json-output.js'
+import { createListCommand } from './list.js'
 import { createMainCommand } from './main.js'
 import { createModelsCommand } from './models.js'
 import { createMuxCommand, MuxExecutionError, printMuxExecutionFailure } from './mux/index.js'
-import { createProfilesCommand } from './profiles.js'
 import { createRunCommand } from './run.js'
 
 async function main(): Promise<void> {
@@ -13,7 +13,7 @@ async function main(): Promise<void> {
 
   program.addCommand(createRunCommand())
   program.addCommand(createModelsCommand())
-  program.addCommand(createProfilesCommand())
+  program.addCommand(createListCommand())
   program.addCommand(createDoctorCommand())
   program.addCommand(createConfigCommand())
   program.addCommand(createMuxCommand())

@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { Command } from 'commander'
 import type { Config } from './config.js'
-import { formatProfiles } from './profiles.js'
+import { formatList } from './list.js'
 
 function makeMultiProfileConfig(): Config {
   return {
@@ -34,9 +34,9 @@ function makeMultiProfileConfig(): Config {
   }
 }
 
-describe('formatProfiles', () => {
+describe('formatList', () => {
   it('lists every profile with agent, model, and effort', () => {
-    const output = formatProfiles(makeMultiProfileConfig())
+    const output = formatList(makeMultiProfileConfig())
     expect(output).toContain('PROFILE')
     expect(output).toContain('AGENT')
     expect(output).toContain('MODEL')
@@ -50,7 +50,7 @@ describe('formatProfiles', () => {
   })
 
   it('marks the default_profile', () => {
-    const output = formatProfiles(makeMultiProfileConfig())
+    const output = formatList(makeMultiProfileConfig())
     expect(output).toContain('balanced *')
     expect(output).toContain('* = default_profile')
   })
@@ -58,20 +58,20 @@ describe('formatProfiles', () => {
   it('does not add a legend when default_profile is unset', () => {
     const config = makeMultiProfileConfig()
     delete config.default_profile
-    const output = formatProfiles(config)
+    const output = formatList(config)
     expect(output).not.toContain('* = default_profile')
   })
 
   it('handles a config without profiles', () => {
     const config = makeMultiProfileConfig()
     config.profiles = {}
-    expect(formatProfiles(config)).toContain('No profiles defined.')
+    expect(formatList(config)).toContain('No profiles defined.')
   })
 })
 
-describe('profiles command', () => {
+describe('list command', () => {
   function writeTempConfig(): { file: string; cleanup: () => void } {
-    const dir = mkdtempSync(join(tmpdir(), 'cagent-profiles-test-'))
+    const dir = mkdtempSync(join(tmpdir(), 'cagent-list-test-'))
     const file = join(dir, 'config.yaml')
     writeFileSync(
       file,
@@ -104,8 +104,8 @@ multiplexer:
     const logSpy = spyOn(console, 'log').mockImplementation(() => {})
     try {
       const program = new Command()
-      program.addCommand((await import('./profiles.js')).createProfilesCommand())
-      await program.parseAsync(['node', 'cagent', 'profiles'])
+      program.addCommand((await import('./list.js')).createListCommand())
+      await program.parseAsync(['node', 'cagent', 'list'])
       expect(logSpy).toHaveBeenCalledTimes(1)
       const output = String(logSpy.mock.calls[0]?.[0])
       expect(output).toContain('fast')
@@ -127,13 +127,13 @@ multiplexer:
     const logSpy = spyOn(console, 'log').mockImplementation(() => {})
     try {
       const program = new Command().option('--json')
-      program.addCommand((await import('./profiles.js')).createProfilesCommand())
-      await program.parseAsync(['node', 'cagent', '--json', 'profiles'])
+      program.addCommand((await import('./list.js')).createListCommand())
+      await program.parseAsync(['node', 'cagent', '--json', 'list'])
       expect(logSpy).toHaveBeenCalledTimes(1)
       const output = JSON.parse(String(logSpy.mock.calls[0]?.[0]))
       expect(output.schema_version).toBe(1)
       expect(output.ok).toBe(true)
-      expect(output.operation).toBe('profiles')
+      expect(output.operation).toBe('list')
       expect(output.data.default_profile).toBe('balanced')
       expect(output.data.profiles).toEqual([
         { name: 'fast', agent: 'codex', model: 'test-model-fast', effort: null },

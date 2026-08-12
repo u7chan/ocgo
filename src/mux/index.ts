@@ -85,7 +85,14 @@ function resolveMuxCommandWithMetadata(
     })
   } catch (error) {
     if (error instanceof ProfileError) {
-      console.error(error.message)
+      const suggestion = 'Run `cagent list` to view configured profiles.'
+      if (isJsonMode(muxOpts)) {
+        const operation = muxOpts.dryRun ? `mux.${mode}.plan` : `mux.${mode}`
+        outputJsonFailure(operation, 'PROFILE_ERROR', error.message, undefined, suggestion)
+      } else {
+        console.error(error.message)
+        console.error(suggestion)
+      }
       process.exit(1)
     }
     throw error

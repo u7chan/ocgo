@@ -45,7 +45,7 @@ describe('models command', () => {
       expect(exitSpy).toHaveBeenCalledWith(1)
       const message = String(errorSpy.mock.calls[0]?.[0])
       expect(message).toContain('`cagent models` no longer lists configured models')
-      expect(message).toContain('cagent profiles')
+      expect(message).toContain('cagent list')
       expect(message).toContain('cagent models available')
     } finally {
       exitSpy.mockRestore()
@@ -77,7 +77,7 @@ describe('models command', () => {
       expect(output.ok).toBe(false)
       expect(output.operation).toBe('models')
       expect(output.error.code).toBe('USAGE_ERROR')
-      expect(output.error.message).toContain('cagent profiles')
+      expect(output.error.message).toContain('cagent list')
     } finally {
       exitSpy.mockRestore()
       logSpy.mockRestore()
@@ -104,7 +104,7 @@ describe('models command', () => {
       expect(exitSpy).toHaveBeenCalledWith(1)
       const message = String(errorSpy.mock.calls[0]?.[0])
       expect(message).toContain('cagent models available')
-      expect(message).toContain('cagent profiles')
+      expect(message).toContain('cagent list')
     } finally {
       exitSpy.mockRestore()
       errorSpy.mockRestore()
@@ -151,7 +151,7 @@ describe('models command', () => {
       expect(exitSpy).toHaveBeenCalledWith(1)
       const message = String(errorSpy.mock.calls[0]?.[0])
       expect(message).toContain('provider model discovery is not supported for agent "codex"')
-      expect(message).toContain('cagent profiles')
+      expect(message).toContain('cagent list')
     } finally {
       exitSpy.mockRestore()
       errorSpy.mockRestore()
