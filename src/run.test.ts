@@ -2,6 +2,7 @@ import { describe, expect, it, spyOn } from 'bun:test'
 import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
+import { createListCommand } from './list.js'
 import { createMainCommand } from './main.js'
 import { createRunCommand, parseRunArgv } from './run.js'
 
@@ -73,6 +74,56 @@ describe('parseRunArgv', () => {
 })
 
 describe('run JSON output', () => {
+  it('prints the profile error and root CLI help for an unknown profile', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'cagent-run-profile-error-test-'))
+    const file = join(dir, 'config.yaml')
+    writeFileSync(
+      file,
+      `default_agent: codex
+default_profile: mid
+profiles:
+  mid: { agent: codex, model: test-model-v1 }
+agents:
+  codex:
+    bin: node
+    provider: codex
+    model_id_prefix: false
+multiplexer:
+  default: herdr
+  herdr: { enabled: true }
+`,
+    )
+    const originalConfig = process.env.CAGENT_CONFIG
+    process.env.CAGENT_CONFIG = file
+    const errorSpy = spyOn(console, 'error').mockImplementation(() => {})
+    const exitSpy = spyOn(process, 'exit').mockImplementation(() => {
+      throw new Error('process.exit')
+    })
+    let help = ''
+    try {
+      const program = createMainCommand()
+      program.addCommand(createRunCommand())
+      program.addCommand(createListCommand())
+      program.configureOutput({ writeOut: (message) => (help += message) })
+      await expect(program.parseAsync(['node', 'cagent', 'run', 'missing'])).rejects.toThrow(
+        'process.exit',
+      )
+
+      expect(errorSpy).toHaveBeenCalledWith('unknown profile: missing')
+      expect(help).toContain('Usage: cagent [options] [command] [profile]')
+      expect(help).toContain('Options:')
+      expect(help).toContain('Commands:')
+      expect(help).toContain('list')
+      expect(help).not.toContain('Available profiles:')
+    } finally {
+      exitSpy.mockRestore()
+      errorSpy.mockRestore()
+      if (originalConfig === undefined) delete process.env.CAGENT_CONFIG
+      else process.env.CAGENT_CONFIG = originalConfig
+      rmSync(dir, { recursive: true, force: true })
+    }
+  })
+
   it('outputs a non-interactive dry-run plan as JSON', async () => {
     const dir = mkdtempSync(join(tmpdir(), 'cagent-run-json-test-'))
     const file = join(dir, 'config.yaml')

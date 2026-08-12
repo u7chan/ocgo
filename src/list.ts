@@ -2,7 +2,7 @@ import { Command } from 'commander'
 import { type Config, loadConfig } from './config.js'
 import { isJsonMode, outputJsonSuccess } from './json-output.js'
 
-export function formatProfiles(config: Config): string {
+export function formatList(config: Config): string {
   const profiles = Object.entries(config.profiles ?? {})
 
   if (profiles.length === 0) {
@@ -33,8 +33,8 @@ export function formatProfiles(config: Config): string {
   return lines.join('\n')
 }
 
-export function createProfilesCommand(): Command {
-  const command = new Command('profiles')
+export function createListCommand(): Command {
+  const command = new Command('list')
 
   command.description('List configured launch profiles').action(() => {
     const config = loadConfig()
@@ -47,13 +47,13 @@ export function createProfilesCommand(): Command {
         model: profile.model,
         effort: profile.effort ?? null,
       }))
-      outputJsonSuccess('profiles', {
+      outputJsonSuccess('list', {
         default_profile: config.default_profile ?? null,
         profiles,
       })
       return
     }
-    console.log(formatProfiles(config))
+    console.log(formatList(config))
   })
 
   return command

@@ -120,6 +120,8 @@ export function createRunCommand(): Command {
       } catch (error) {
         if (error instanceof ProfileError) {
           console.error(error.message)
+          const rootCommand = command.parent ?? command
+          rootCommand.outputHelp()
           process.exit(1)
         }
         throw error

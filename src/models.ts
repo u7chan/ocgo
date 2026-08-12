@@ -17,7 +17,7 @@ export function createModelsCommand(): Command {
       const globals = command.optsWithGlobals() as { json?: boolean }
       const message =
         '`cagent models` no longer lists configured models.\n' +
-        'Use `cagent profiles` to view the configured profile list.\n' +
+        'Use `cagent list` to view the configured profile list.\n' +
         'Use `cagent models available` to query the provider for available models.'
       if (isJsonMode(globals)) {
         outputJsonFailure('models', 'USAGE_ERROR', message)
@@ -49,7 +49,7 @@ export function createModelsCommand(): Command {
       if (!adapter.buildModelListCommand) {
         console.error(
           `Error: provider model discovery is not supported for agent "${effectiveAgentId}".\n` +
-            `Run \`cagent profiles\` to view configured profiles.`,
+            `Run \`cagent list\` to view configured profiles.`,
         )
         process.exit(1)
       }
