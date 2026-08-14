@@ -686,7 +686,7 @@ function smokeExtended(args: string[], reportDir: string): number {
 
   const doctor =
     cli.status === 'pass'
-      ? run('node', [builtEntryPoint, 'doctor'], root, env)
+      ? run('node', [builtEntryPoint, 'doctor'], root, { ...env, CAGENT_AGENT: agent })
       : { status: 1, stdout: '', stderr: cli.diagnostic ?? 'build failed' }
 
   const supportsModelListing = Boolean(getAgentAdapter(agent).buildModelListCommand)
@@ -696,9 +696,7 @@ function smokeExtended(args: string[], reportDir: string): number {
   } else if (!supportsModelListing) {
     modelsStatus = 'skip'
   } else {
-    const modelsEnv = { ...env, CAGENT_AGENT: agent }
-    const models = run('node', [builtEntryPoint, 'models', 'available'], root, modelsEnv)
-    modelsStatus = models.status === 0 ? 'pass' : 'fail'
+    modelsStatus = doctor.status === 0 ? 'pass' : 'fail'
   }
 
   const muxDryRun =
