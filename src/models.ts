@@ -16,9 +16,7 @@ export function createModelsCommand(): Command {
     .action(() => {
       const globals = command.optsWithGlobals() as { json?: boolean }
       const message =
-        '`cagent models` no longer lists configured models.\n' +
-        'Use `cagent list` to view the configured profile list.\n' +
-        'Use `cagent models available` to query the provider for available models.'
+        "Error: 'cagent models' is removed. Use 'cagent list' to view profiles or 'cagent models available' to list provider models."
       if (isJsonMode(globals)) {
         outputJsonFailure('models', 'USAGE_ERROR', message)
       } else {

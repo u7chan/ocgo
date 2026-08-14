@@ -224,7 +224,7 @@ frontier     codex       gpt-5.6-sol    high
 
 `cagent models` は設定済みモデルの一覧を表示しません。プロファイルの一覧には
 `cagent list`、プロバイダーで利用できるモデルの一覧には `cagent models available` を使います。
-`cagent models` 単体はこの案内を表示して終了します。
+`cagent models` 単体はエラー終了します。
 
 `models available` はプロバイダーCLIに問い合わせ、現在利用可能なモデルを表示します。
 OpenCode Goでは次のコマンドに対応しています。Codexにはプロバイダーのモデル検出アダプターが

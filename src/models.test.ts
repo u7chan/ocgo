@@ -30,7 +30,7 @@ multiplexer:
 }
 
 describe('models command', () => {
-  it('fails bare cagent models with guidance instead of listing configured models', async () => {
+  it('fails bare cagent models with a one-line removal error', async () => {
     const { file, cleanup } = writeTempConfig('opencode-go', 'opencode')
     const originalConfig = process.env.CAGENT_CONFIG
     process.env.CAGENT_CONFIG = file
@@ -44,7 +44,7 @@ describe('models command', () => {
       await expect(program.parseAsync(['node', 'cagent', 'models'])).rejects.toThrow('process.exit')
       expect(exitSpy).toHaveBeenCalledWith(1)
       const message = String(errorSpy.mock.calls[0]?.[0])
-      expect(message).toContain('`cagent models` no longer lists configured models')
+      expect(message).toContain("'cagent models' is removed")
       expect(message).toContain('cagent list')
       expect(message).toContain('cagent models available')
     } finally {
