@@ -4,7 +4,6 @@ import { createDoctorCommand } from './doctor.js'
 import { outputJsonFailure } from './json-output.js'
 import { createListCommand } from './list.js'
 import { createMainCommand } from './main.js'
-import { createModelsCommand } from './models.js'
 import { createMuxCommand, MuxExecutionError, printMuxExecutionFailure } from './mux/index.js'
 import { createRunCommand } from './run.js'
 
@@ -12,7 +11,6 @@ async function main(): Promise<void> {
   const program = createMainCommand()
 
   program.addCommand(createRunCommand())
-  program.addCommand(createModelsCommand())
   program.addCommand(createListCommand())
   program.addCommand(createDoctorCommand())
   program.addCommand(createConfigCommand())

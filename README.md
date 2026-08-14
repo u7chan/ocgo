@@ -222,28 +222,14 @@ frontier     codex       gpt-5.6-sol    high
 * = default_profile
 ```
 
-`cagent models` は設定済みモデルの一覧を表示しません。プロファイルの一覧には
-`cagent list`、プロバイダーで利用できるモデルの一覧には `cagent models available` を使います。
-`cagent models` 単体はエラー終了します。
-
-`models available` はプロバイダーCLIに問い合わせ、現在利用可能なモデルを表示します。
-OpenCode Goでは次のコマンドに対応しています。Codexにはプロバイダーのモデル検出アダプターが
-ないため、Codexで利用できるモデルは `cagent list` と設定を確認してください。
-
-```bash
-CAGENT_AGENT=opencode-go cagent models available
-CAGENT_AGENT=opencode-go cagent models available --refresh
-
-# プロバイダーCLIを起動せず、解決されるコマンドだけ確認
-CAGENT_AGENT=opencode-go cagent --dry-run models available --refresh
-```
+プロバイダーで利用可能なモデルの一覧は、`doctor --refresh` で確認できます。
 
 ## 環境変数
 
 | 環境変数 | 用途 |
 | --- | --- |
 | `CAGENT_CONFIG` | 設定ファイルのパスを上書き |
-| `CAGENT_AGENT` | `models available` と `doctor` の対象エージェントを上書き |
+| `CAGENT_AGENT` | `doctor` の対象エージェントを上書き |
 | `CAGENT_PROFILE` | プロファイル選択を上書き |
 | `CAGENT_MODEL` | 選択したプロファイルのモデルを上書き |
 | `CAGENT_EFFORT` | 選択したプロファイルの`effort`を上書き |
