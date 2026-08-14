@@ -44,9 +44,10 @@ describe('models command', () => {
       await expect(program.parseAsync(['node', 'cagent', 'models'])).rejects.toThrow('process.exit')
       expect(exitSpy).toHaveBeenCalledWith(1)
       const message = String(errorSpy.mock.calls[0]?.[0])
-      expect(message).toContain("'cagent models' is removed")
+      expect(message).toContain('`cagent models` is removed')
       expect(message).toContain('cagent list')
       expect(message).toContain('cagent models available')
+      expect(message).toContain('Error: ')
     } finally {
       exitSpy.mockRestore()
       errorSpy.mockRestore()
@@ -77,6 +78,8 @@ describe('models command', () => {
       expect(output.ok).toBe(false)
       expect(output.operation).toBe('models')
       expect(output.error.code).toBe('USAGE_ERROR')
+      expect(output.error.message).toContain('`cagent models` is removed')
+      expect(output.error.message).not.toContain('Error: ')
       expect(output.error.message).toContain('cagent list')
     } finally {
       exitSpy.mockRestore()
