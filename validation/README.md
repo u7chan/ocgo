@@ -39,12 +39,12 @@ bun run validate smoke --profile core --live
 
 ## Herdr連携（extended）のスモークテスト
 
-`extended`ではdoctor、models、muxのドライラン、アテステーション検証を非破壊で実行します。既定では
+`extended`ではdoctor（providerのmodelsチェックを含む）、muxのドライラン、アテステーション検証を非破壊で実行します。既定では
 実際のHerdrを起動せず、`herdr pane split/run`を呼びません。既定の対象は
 `codex:codex-balanced`です。
 
 ```bash
-# 既定：ドライラン、doctor、models、アテステーション検証のみ（実Herdr起動なし）
+# 既定：ドライラン、doctor（modelsチェックを含む）、アテステーション検証のみ（実Herdr起動なし）
 bun run validate smoke --profile extended --attestation /absolute/path/to/attestation.yaml
 
 # 対象エージェントとLaunch Profileを明示

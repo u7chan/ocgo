@@ -37,7 +37,7 @@ Treat `backend_attestation: unobservable` as an unknown state, not a successful 
 
 ## Herdr extended smoke
 
-`bun run validate smoke --profile extended --attestation <absolute-path>` は既定で dry-run、doctor、models、mux dry-run、attestation検証のみを実行し、実Herdrを起動しません。既定の対象Launch Profileは `codex-balanced` です。実Herdr paneの起動には `--live` と `--confirm-herdr-side-effects` の両方が必須です。片方だけでは一切 split/run/close を呼ばず、失敗理由をレポートします。
+`bun run validate smoke --profile extended --attestation <absolute-path>` は既定で dry-run、doctor（providerのmodelsチェックを含む）、mux dry-run、attestation検証のみを実行し、実Herdrを起動しません。既定の対象Launch Profileは `codex-balanced` です。実Herdr paneの起動には `--live` と `--confirm-herdr-side-effects` の両方が必須です。片方だけでは一切 split/run/close を呼ばず、失敗理由をレポートします。
 
 ```bash
 # 既定：実Herdr起動なし
